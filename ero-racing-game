@@ -1,0 +1,131 @@
+ero-racing-game/
+│
+├── <!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ERO的賽車遊戲 最終版本</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="menu">
+    <h1>🏎️ ERO的賽車遊戲 最終版本</h1>
+    <button id="startBtn">開始遊戲</button>
+    <button id="settingsBtn">設定</button>
+  </div>
+
+  <canvas id="gameCanvas"></canvas>
+
+  <div id="settings" class="hidden">
+    <h2>設定</h2>
+    <label>
+      <input type="checkbox" id="gyroToggle" />
+      啟用重力感應操作
+    </label>
+    <button id="closeSettings">關閉</button>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
+├── body {
+  margin: 0;
+  overflow: hidden;
+  font-family: "Noto Sans TC", sans-serif;
+  background: linear-gradient(to bottom, #1e1e2e, #111);
+  color: #fff;
+  text-align: center;
+}
+
+#menu {
+  position: absolute;
+  width: 100%;
+  top: 30%;
+}
+
+button {
+  padding: 10px 20px;
+  font-size: 18px;
+  border-radius: 12px;
+  background-color: #0af;
+  color: white;
+  border: none;
+  margin: 10px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+button:hover {
+  background-color: #09c;
+}
+
+canvas {
+  display: none;
+  background: #333;
+}
+
+.hidden {
+  display: none;
+}
+
+#settings {
+  position: absolute;
+  top: 30%;
+  width: 100%;
+  background-color: rgba(0, 0, 0, 0.8);
+  padding: 20px;
+}
+└── const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+const startBtn = document.getElementById("startBtn");
+const settingsBtn = document.getElementById("settingsBtn");
+const settingsPanel = document.getElementById("settings");
+const closeSettings = document.getElementById("closeSettings");
+const gyroToggle = document.getElementById("gyroToggle");
+
+let player = { x: canvas.width / 2, y: canvas.height - 150, speed: 5 };
+let keys = {};
+let useGyro = false;
+
+startBtn.onclick = () => {
+  document.getElementById("menu").style.display = "none";
+  canvas.style.display = "block";
+  startGame();
+};
+
+settingsBtn.onclick = () => (settingsPanel.classList.remove("hidden"));
+closeSettings.onclick = () => (settingsPanel.classList.add("hidden"));
+gyroToggle.onchange = (e) => (useGyro = e.target.checked);
+
+window.addEventListener("keydown", (e) => (keys[e.key] = true));
+window.addEventListener("keyup", (e) => (keys[e.key] = false));
+
+if (window.DeviceOrientationEvent) {
+  window.addEventListener("deviceorientation", (event) => {
+    if (useGyro) {
+      player.x += event.gamma / 2;
+    }
+  });
+}
+
+function drawCar() {
+  ctx.fillStyle = "red";
+  ctx.fillRect(player.x - 25, player.y - 50, 50, 100);
+}
+
+function startGame() {
+  function gameLoop() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    if (keys["ArrowLeft"]) player.x -= player.speed;
+    if (keys["ArrowRight"]) player.x += player.speed;
+
+    drawCar();
+    requestAnimationFrame(gameLoop);
+  }
+  gameLoop();
+}
